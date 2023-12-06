@@ -16,6 +16,10 @@ import { useDarkMode } from "../assets/Themes/DarkModeContext";
 import { Link } from "expo-router/";
 import * as Device from "expo-device";
 import { Themes } from "../assets/Themes";
+// import { Auth } from "@supabase/auth-ui-react";
+// import { ThemeSupa } from "@supabase/auth-ui-shared";
+import supabase from "./Supabase";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 const deviceMap = {
   [Device.DeviceType.PHONE]: "phone",
@@ -47,7 +51,13 @@ const Header = () => {
             borderRadius: 8,
           }}
         >
-          <Text>{darkMode ? "Light Mode" : "Dark Mode"}</Text>
+          <Ionicons
+            name="apps-outline"
+            color="white"
+            size={60}
+            style={styles.icon}
+          />
+          {/* <Text>{darkMode ? "Light Mode" : "Dark Mode"}</Text> */}
         </View>
       </Pressable>
     </View>
@@ -60,6 +70,45 @@ export default function Page() {
 
   // Device type
   const [deviceType, setDeviceType] = useState(null);
+  const [session, setSession] = useState(null);
+
+  // useEffect(() => {
+  //   supabase.auth.getSession().then(({ data: { session } }) => {
+  //     console.log(session);
+  //     setSession(session);
+  //   });
+
+  //   const {
+  //     data: { subscription },
+  //   } = supabase.auth.onAuthStateChange((event, session) => {
+  //     setSession(session);
+  //   });
+
+  //   return () => subscription.unsubscribe();
+  // }, []);
+
+  // Sign Up
+  const signUp = async (email, password) => {
+    const { user, error } = await supabase.auth.signUp({ email, password });
+    return { user, error };
+  };
+
+  // Sign In
+  const signIn = async (email, password) => {
+    const { user, error } = await supabase.auth.signIn({ email, password });
+    return { user, error };
+  };
+
+  // Sign Out
+  const signOut = async () => {
+    await supabase.auth.signOut();
+  };
+
+  // Check Authentication Status
+  const checkAuthStatus = () => {
+    const user = supabase.auth.user();
+    return user;
+  };
 
   useEffect(() => {
     Device.getDeviceTypeAsync().then((deviceType) => {
@@ -95,6 +144,10 @@ export default function Page() {
     fetchWeatherData();
   }, []);
 
+  // if (!session) {
+  //   return <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} />;
+  // }
+
   return (
     <LinearGradient
       colors={darkMode ? Themes.light.colors : Themes.dark.colors}
@@ -127,7 +180,15 @@ export default function Page() {
               },
             }}
           >
-            <Text>post a sunset</Text>
+            <View style={styles.button}>
+              <Ionicons
+                name="image-outline"
+                color="white"
+                size={60}
+                style={styles.icon}
+              />
+              <Text style={styles.buttonText}>post today's sunset</Text>
+            </View>
           </Link>
           <Link
             href={{
@@ -137,7 +198,15 @@ export default function Page() {
               },
             }}
           >
-            <Text>past sunsets</Text>
+            <View style={styles.button}>
+              <Ionicons
+                name="apps-outline"
+                color="white"
+                size={60}
+                style={styles.icon}
+              />
+              <Text style={styles.buttonText}>past sunsets</Text>
+            </View>
           </Link>
         </View>
       </View>
@@ -172,10 +241,34 @@ const styles = StyleSheet.create({
     color: "white",
   },
   buttonContainer: {
-    marginTop: 20,
+    marginTop: 60,
+    // borderColor: "yellow",
+    // borderWidth: 5,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    // height: "20%",
+    // flex: 1,
+  },
+  buttonText: {
+    color: "white",
   },
   button: {
-    borderRadius: 90,
-    backgroundColor: "white",
+    // borderRadius: 90,
+    // backgroundColor: "white",
+    // flexDirection: "column",
+    // flex: 1,
+    // width: "40%",
+    // borderColor: "blue",
+    // borderWidth: 5,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  icon: {
+    // borderRadius: 50,
+    // borderColor: "blue",
+    // borderWidth: 5,
+    // resizeMode: "contain",
   },
 });

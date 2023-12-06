@@ -14,94 +14,44 @@ import supabase from "./Supabase";
 import { useDarkMode } from "../assets/Themes/DarkModeContext";
 import { Themes } from "../assets/Themes";
 import { useLocalSearchParams } from "expo-router";
-import * as FileSystem from "expo-file-system";
 import { decode } from "base64-arraybuffer";
 
 // const testing = false;
-
-// const uploadToSupabase = async (base64Image, imageExtension, bucketName) => {
-//   try {
-//     const base64Str = base64Image.includes("base64,")
-//       ? base64Image.substring(base64Image.indexOf("base64,") + "base64,".length)
-//       : base64Image;
-//     const res = decode(base64Str);
-
-//     if (!(res.byteLength > 0)) {
-//       console.error("[uploadToSupabase] ArrayBuffer is null");
-//       return null;
-//     }
-
-//     const { data, error } = await supabaseClient.storage
-//       .from(bucketName)
-//       .upload(`${nanoid()}.${imageExtension}`, res, {
-//         contentType: `image/${imageExtension}`,
-//       });
-//     if (!data) {
-//       console.error("[uploadToSupabase] Data is null");
-//       return null;
-//     }
-
-//     if (error) {
-//       console.error("[uploadToSupabase] upload: ", error);
-//       return null;
-//     }
-//     const { publicURL, error: urlError } = supabaseClient.storage
-//       .from(bucketName)
-//       .getPublicUrl(data.Key.replace(`${bucketName}/`, ""));
-
-//     if (urlError) {
-//       console.error("[uploadToSupabase] PublicURL: ", urlError);
-//       return null;
-//     }
-
-//     if (!publicURL) {
-//       console.error("[uploadToSupabase] publicURL is null");
-//       return null;
-//     }
-
-//     return publicURL;
-//   } catch (err) {
-//     console.error(err);
-//     return null;
-//   }
-// };
 
 export default function Page() {
   const params = useLocalSearchParams();
 
   const { darkMode } = useDarkMode();
   const [selectedImage, setSelectedImage] = useState(null);
-  const [imagePath, setImagePath] = useState(null);
 
   useEffect(() => {
     // Check if a sunset image has been uploaded for the current day
     const checkExistingSunsetImage = async () => {
       try {
         const currentDate = new Date().toISOString().slice(0, 10);
-        // console.log(currentDate);
+        console.log("current date: ", currentDate);
 
-        const { data, error } = await supabase
-          .from("sunset-images")
-          .select("image_uri")
-          .eq("date_created", currentDate);
-
-        // const { data, error } = await supabase.storage
-        //   .from("sunset-bucket")
-        //   .list();
-
-        // console.log("bucket contents:", data[1]);
+        const { data, error } = await supabase.storage
+          .from("sunset-bucket")
+          .list();
 
         if (error) {
           console.error(
             "First error checking existing sunset image:",
             error.message
           );
-        } else if (data.length > 0) {
-          // If one image exists for today, use that.
-          setSelectedImage(data[0].image_uri);
-          // if (!testing) {
-          //   setSelectedImage(data.image_uri);
-          // }
+        } else {
+          const filteredEntries = data.filter((entry) =>
+            entry.name.includes(currentDate)
+          );
+          if (filteredEntries.length > 0) {
+            console.log("TRUE");
+            const { data } = supabase.storage
+              .from("sunset-bucket")
+              .getPublicUrl(`${currentDate}.png`);
+            console.log("public url", data);
+            setSelectedImage(data.publicUrl);
+          }
         }
       } catch (error) {
         console.error(
@@ -132,9 +82,6 @@ export default function Page() {
         quality: 1,
         base64: true,
       });
-
-      console.log(result);
-
       if (result.canceled) {
         return;
       }
@@ -149,17 +96,7 @@ export default function Page() {
           },
           {
             text: "OK",
-            onPress: () => uploadImage(result),
-            // onPress: () => {
-            //   setImagePath(`data:${result.mime};base64,${result.data}`);
-            //   console.log(
-            //     "image path: ",
-            //     `data:${result.mime};base64,${result.data}`
-            //   );
-            //   console.log(result);
-            //   uploadToSupabase(imagePath, "jpg", "sunset-bucket");
-            //   // const imageUrl = await uploadToSupabase(imagePath, "jpg", "posts");
-            // },
+            onPress: () => uploadImage(result.assets[0].base64),
           },
         ],
         { cancelable: false }
@@ -169,43 +106,22 @@ export default function Page() {
     }
   };
 
-  const uploadImage = async (result) => {
+  const uploadImage = async (base64) => {
     try {
-      const currentDate = new Date()
-        .toISOString()
-        .slice(0, 19)
-        .replace("T", " ");
-
-      // Upload image to supabase
-      // const { data, error } = await supabase.from("images").insert({
-      //   date_created: currentDate,
-      //   image_uri: imageUri,
-      // });
-      // const toUpload = await FileSystem.readAsStringAsync(
-      //   result.assets[0].uri,
-      //   {
-      //     encoding: "base64",
-      //   }
-      // );
+      const currentDate = new Date().toISOString().slice(0, 10);
 
       const { data, error } = await supabase.storage
         .from("sunset-bucket")
-        .upload("image4.png", decode(result.assets[0].base64), {
+        .upload(`${currentDate}.png`, decode(base64), {
           cacheControl: "3600",
           upsert: false,
         });
-
-      // const { data, error } = await supabase.storage
-      //   .from("sunset-bucket")
-      //   .list();
-
-      console.log(data);
 
       if (error) {
         console.error("First error uploading image:", error);
       } else {
         console.log("Image uploaded successfully:", data);
-        setSelectedImage(result.assets[0].base64);
+        setSelectedImage(base64);
       }
     } catch (error) {
       console.error("Second error uploading image:", error.message);

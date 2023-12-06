@@ -21,51 +21,34 @@ export default function Page() {
 
   useEffect(() => {
     const fetchSunsetImages = async () => {
-      // try {
-      // const { data, error } = await supabase
-      //   .from("sunset-images")
-      //   .select("*");
-      // const { data, error } = await supabase.storage
-      //   .from("sunset-bucket")
-      //   .list()
-      //   .then(({ data }) => {
-      //     const fr = new FileReader();
-      //     fr.readAsDataURL(data);
-      //     fr.onload = () => {
-      //       setImage(fr.result);
-      //     };
-      //   });
-      const { data } = supabase.storage
+      const { data, error } = await supabase.storage
         .from("sunset-bucket")
-        .getPublicUrl("image2.png");
-      console.log("public url", data);
-      setSunsetImages(data);
-      //   if (error) {
-      //     console.error("First error fetching sunset images:", error);
-      //   } else {
-      //     setSunsetImages(data);
-      //     //   console.log(data);
-      //   }
-      // } catch (error) {
-      //   console.error("Second error fetching sunset images:", error.message);
-      // }
-      // };
+        .list();
+      setSunsetImages(
+        data
+          .filter((entry) => entry.name != ".emptyFolderPlaceholder")
+          .map((image) => image.name)
+      );
+      console.log("images: ", sunsetImages);
     };
     fetchSunsetImages();
   }, []);
 
   const renderSunsetImage = ({ item }) => {
-    const date = new Date(item.date_created);
+    const itemDate = item.slice(0, -4);
+    const date = new Date(itemDate);
     const month = date
       .toLocaleString("en-us", {
         month: "short",
       })
       .toLocaleLowerCase();
+    console.log(month);
     const day = date.getDate();
     const dateString = `${month} ${day}`;
+    const { data } = supabase.storage.from("sunset-bucket").getPublicUrl(item);
     return (
       <View style={styles.quiltTile}>
-        <Image source={{ uri: item.image_uri }} style={styles.imageItem} />
+        <Image source={{ uri: data.publicUrl }} style={styles.imageItem} />
         <Text style={styles.caption}>{dateString}</Text>
       </View>
     );
@@ -79,17 +62,13 @@ export default function Page() {
       <SafeAreaView>
         <View style={styles.container}>
           <Text style={styles.title}>past sunsets</Text>
-          <Image
-            source={{ uri: sunsetImages.publicUrl }}
-            style={styles.imageItem}
-          ></Image>
 
-          {/* <FlatList
+          <FlatList
             data={sunsetImages}
             keyExtractor={(item) => item.name}
             renderItem={renderSunsetImage}
             numColumns={3}
-          /> */}
+          />
         </View>
       </SafeAreaView>
     </LinearGradient>
@@ -115,8 +94,8 @@ const styles = StyleSheet.create({
     height: 150,
     margin: 10,
     borderRadius: 30,
-    borderWidth: 5,
-    borderColor: "blue",
+    // borderWidth: 5,
+    // borderColor: "blue",
   },
   caption: {
     color: "white",
