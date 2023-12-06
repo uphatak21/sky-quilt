@@ -14,14 +14,64 @@ import supabase from "./Supabase";
 import { useDarkMode } from "../assets/Themes/DarkModeContext";
 import { Themes } from "../assets/Themes";
 import { useLocalSearchParams } from "expo-router";
+import * as FileSystem from "expo-file-system";
+import { decode } from "base64-arraybuffer";
 
 // const testing = false;
+
+// const uploadToSupabase = async (base64Image, imageExtension, bucketName) => {
+//   try {
+//     const base64Str = base64Image.includes("base64,")
+//       ? base64Image.substring(base64Image.indexOf("base64,") + "base64,".length)
+//       : base64Image;
+//     const res = decode(base64Str);
+
+//     if (!(res.byteLength > 0)) {
+//       console.error("[uploadToSupabase] ArrayBuffer is null");
+//       return null;
+//     }
+
+//     const { data, error } = await supabaseClient.storage
+//       .from(bucketName)
+//       .upload(`${nanoid()}.${imageExtension}`, res, {
+//         contentType: `image/${imageExtension}`,
+//       });
+//     if (!data) {
+//       console.error("[uploadToSupabase] Data is null");
+//       return null;
+//     }
+
+//     if (error) {
+//       console.error("[uploadToSupabase] upload: ", error);
+//       return null;
+//     }
+//     const { publicURL, error: urlError } = supabaseClient.storage
+//       .from(bucketName)
+//       .getPublicUrl(data.Key.replace(`${bucketName}/`, ""));
+
+//     if (urlError) {
+//       console.error("[uploadToSupabase] PublicURL: ", urlError);
+//       return null;
+//     }
+
+//     if (!publicURL) {
+//       console.error("[uploadToSupabase] publicURL is null");
+//       return null;
+//     }
+
+//     return publicURL;
+//   } catch (err) {
+//     console.error(err);
+//     return null;
+//   }
+// };
 
 export default function Page() {
   const params = useLocalSearchParams();
 
   const { darkMode } = useDarkMode();
   const [selectedImage, setSelectedImage] = useState(null);
+  const [imagePath, setImagePath] = useState(null);
 
   useEffect(() => {
     // Check if a sunset image has been uploaded for the current day
@@ -34,6 +84,12 @@ export default function Page() {
           .from("sunset-images")
           .select("image_uri")
           .eq("date_created", currentDate);
+
+        // const { data, error } = await supabase.storage
+        //   .from("sunset-bucket")
+        //   .list();
+
+        // console.log("bucket contents:", data[1]);
 
         if (error) {
           console.error(
@@ -74,7 +130,10 @@ export default function Page() {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         quality: 1,
+        base64: true,
       });
+
+      console.log(result);
 
       if (result.canceled) {
         return;
@@ -90,7 +149,17 @@ export default function Page() {
           },
           {
             text: "OK",
-            onPress: () => uploadImage(result.assets[0].uri),
+            onPress: () => uploadImage(result),
+            // onPress: () => {
+            //   setImagePath(`data:${result.mime};base64,${result.data}`);
+            //   console.log(
+            //     "image path: ",
+            //     `data:${result.mime};base64,${result.data}`
+            //   );
+            //   console.log(result);
+            //   uploadToSupabase(imagePath, "jpg", "sunset-bucket");
+            //   // const imageUrl = await uploadToSupabase(imagePath, "jpg", "posts");
+            // },
           },
         ],
         { cancelable: false }
@@ -100,7 +169,7 @@ export default function Page() {
     }
   };
 
-  const uploadImage = async (imageUri) => {
+  const uploadImage = async (result) => {
     try {
       const currentDate = new Date()
         .toISOString()
@@ -108,19 +177,38 @@ export default function Page() {
         .replace("T", " ");
 
       // Upload image to supabase
-      const { data, error } = await supabase.from("sunset-images").insert({
-        date_created: currentDate,
-        image_uri: imageUri.toString(),
-      });
+      // const { data, error } = await supabase.from("images").insert({
+      //   date_created: currentDate,
+      //   image_uri: imageUri,
+      // });
+      // const toUpload = await FileSystem.readAsStringAsync(
+      //   result.assets[0].uri,
+      //   {
+      //     encoding: "base64",
+      //   }
+      // );
+
+      const { data, error } = await supabase.storage
+        .from("sunset-bucket")
+        .upload("image4.png", decode(result.assets[0].base64), {
+          cacheControl: "3600",
+          upsert: false,
+        });
+
+      // const { data, error } = await supabase.storage
+      //   .from("sunset-bucket")
+      //   .list();
+
+      console.log(data);
 
       if (error) {
-        console.error("Error uploading image:", error);
+        console.error("First error uploading image:", error);
       } else {
         console.log("Image uploaded successfully:", data);
-        setSelectedImage(imageUri);
+        setSelectedImage(result.assets[0].base64);
       }
     } catch (error) {
-      console.error("Error uploading image:", error.message);
+      console.error("Second error uploading image:", error.message);
     }
   };
 
