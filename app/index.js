@@ -25,6 +25,7 @@ const deviceMap = {
 };
 
 const windowWidth = Dimensions.get("window").width;
+const windowHeight = Dimensions.get("window").height;
 
 const Header = () => {
   const { darkMode, toggleDarkMode } = useDarkMode();
@@ -151,23 +152,23 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   title: {
-    fontSize: windowWidth * 0.09,
+    fontSize: windowWidth * 0.072,
     fontWeight: "bold",
     marginBottom: 10,
     color: "white",
   },
   city: {
-    fontSize: 20,
+    fontSize: windowWidth * 0.06,
     marginBottom: 10,
     color: "white",
   },
   temperature: {
-    fontSize: 18,
+    fontSize: windowWidth * 0.05,
     marginBottom: 5,
     color: "white",
   },
   description: {
-    fontSize: 16,
+    fontSize: windowWidth * 0.05,
     color: "white",
   },
   buttonContainer: {

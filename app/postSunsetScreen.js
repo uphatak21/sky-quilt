@@ -13,6 +13,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import supabase from "./Supabase";
 import { useDarkMode } from "../assets/Themes/DarkModeContext";
 import { Themes } from "../assets/Themes";
+import { useLocalSearchParams } from "expo-router";
 
 // const testing = false;
 
@@ -89,7 +90,7 @@ export default function Page() {
           },
           {
             text: "OK",
-            onPress: () => uploadImage(result.assets),
+            onPress: () => uploadImage(result.assets[0].uri),
           },
         ],
         { cancelable: false }
@@ -170,7 +171,7 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: "bold",
     color: "#FFFFFF",
-    fontFamily: "sans-serif",
+    // fontFamily: "sans-serif",
     marginBottom: 20,
   },
   body: {

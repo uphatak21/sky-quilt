@@ -11,6 +11,7 @@ import supabase from "./Supabase";
 import { LinearGradient } from "expo-linear-gradient";
 import { useDarkMode } from "../assets/Themes/DarkModeContext";
 import { Themes } from "../assets/Themes";
+import { useLocalSearchParams } from "expo-router";
 
 export default function Page() {
   const params = useLocalSearchParams();
@@ -86,7 +87,7 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: "bold",
     color: "white",
-    fontFamily: "sans-serif",
+    // fontFamily: "sans-serif",
     marginBottom: 20,
   },
   imageItem: {
