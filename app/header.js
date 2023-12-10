@@ -1,11 +1,8 @@
 import React from "react";
-import { View, Pressable } from "react-native";
-import { useDarkMode } from "../assets/Themes/DarkModeContext";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { View } from "react-native";
+import ToggleSwitch from "./toggleSwitch";
 
-const Header = () => {
-  const { darkMode, toggleDarkMode } = useDarkMode();
-
+const Header = ({ isEnabled, toggleSwitch }) => {
   return (
     <View
       style={{
@@ -17,23 +14,7 @@ const Header = () => {
         // borderWidth: 5,
       }}
     >
-      <Pressable onPress={toggleDarkMode}>
-        <View
-          style={{
-            padding: 10,
-            backgroundColor: darkMode ? "#555" : "#ddd",
-            borderRadius: 8,
-          }}
-        >
-          <Ionicons
-            name="apps-outline"
-            color="white"
-            size={60}
-            // style={styles.icon}
-          />
-          {/* <Text>{darkMode ? "Light Mode" : "Dark Mode"}</Text> */}
-        </View>
-      </Pressable>
+      <ToggleSwitch isEnabled={isEnabled} toggleSwitch={toggleSwitch} />
     </View>
   );
 };

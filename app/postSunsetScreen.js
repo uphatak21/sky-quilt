@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Alert,
   SafeAreaView,
+  StatusBar,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { LinearGradient } from "expo-linear-gradient";
@@ -19,8 +20,7 @@ import { decode } from "base64-arraybuffer";
 // const testing = false;
 
 export default function Page() {
-  const params = useLocalSearchParams();
-  console.log(params);
+  const { isTablet, userId } = useLocalSearchParams();
 
   const { darkMode } = useDarkMode();
   const [selectedImage, setSelectedImage] = useState(null);
@@ -36,7 +36,7 @@ export default function Page() {
 
         const { data, error } = await supabase.storage
           .from("sunset-bucket")
-          .list(params.userId);
+          .list(userId);
 
         if (error) {
           console.error(
@@ -50,7 +50,7 @@ export default function Page() {
           if (filteredEntries.length > 0) {
             console.log("TRUE");
             const { data } = supabase.storage
-              .from(`sunset-bucket/${params.userId}`)
+              .from(`sunset-bucket/${userId}`)
               .getPublicUrl(`${currentDate}.png`);
             console.log("public url", data);
             setSelectedImage(data.publicUrl);
@@ -118,7 +118,7 @@ export default function Page() {
 
       const { data, error } = await supabase.storage
         .from("sunset-bucket")
-        .upload(`${params.userId}/${currentDate}.png`, decode(base64), {
+        .upload(`${userId}/${currentDate}.png`, decode(base64), {
           cacheControl: "3600",
           upsert: false,
         });
@@ -136,10 +136,11 @@ export default function Page() {
 
   return (
     <LinearGradient
-      colors={darkMode ? Themes.light.colors : Themes.dark.colors}
+      colors={darkMode ? Themes.dark.colors : Themes.light.colors}
       style={styles.container}
     >
       <SafeAreaView>
+        <StatusBar barStyle={"light-content"} />
         <View style={styles.container}>
           <Text style={styles.title}>sky quilt</Text>
           <View

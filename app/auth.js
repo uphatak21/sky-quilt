@@ -2,37 +2,39 @@ import React, { useState } from "react";
 import { Alert, StyleSheet, View } from "react-native";
 import supabase from "./Supabase";
 import { Button, Input } from "react-native-elements";
-// change to be a pressable!
+// change to be a pressable?
 
 export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // add try catch to auth
-
   async function signInWithEmail() {
     setLoading(true);
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: email,
-      password: password,
-    });
-
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password,
+      });
+    } catch (error) {
+      console.error(error);
+    }
     if (error) Alert.alert(error.message);
     setLoading(false);
-    // console.log(session.user.email);
   }
 
   async function signUpWithEmail() {
     setLoading(true);
-    const { data, error } = await supabase.auth.signUp({
-      email: email,
-      password: password,
-    });
-
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: email,
+        password: password,
+      });
+    } catch (error) {
+      console.error(error);
+    }
     if (error) Alert.alert(error.message);
     setLoading(false);
-    // console.log(session.user.email);
   }
 
   return (
@@ -81,8 +83,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    // borderColor: "blue",
-    // borderWidth: 5,
     width: "90%",
   },
   verticallySpaced: {

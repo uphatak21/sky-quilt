@@ -21,8 +21,6 @@ import Header from "./header";
 import Auth from "./auth";
 import supabase from "./Supabase";
 
-// add safe area view?
-
 const deviceMap = {
   [Device.DeviceType.PHONE]: "phone",
   [Device.DeviceType.TABLET]: "tablet",
@@ -32,12 +30,16 @@ const deviceMap = {
 const windowWidth = Dimensions.get("window").width;
 
 export default function Page() {
-  const { darkMode } = useDarkMode();
+  const { darkMode, toggleDarkMode } = useDarkMode();
   const [weatherData, setWeatherData] = useState(null);
-  // Device type
   const [deviceType, setDeviceType] = useState(null);
   const [session, setSession] = useState(null);
-  // console.log("session in index", session);
+  const [isEnabled, setIsEnabled] = useState(false);
+
+  const toggleSwitch = () => {
+    setIsEnabled((previousState) => !previousState);
+    toggleDarkMode();
+  };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -67,7 +69,6 @@ export default function Page() {
       }
 
       const location = await getCurrentPositionAsync({});
-      //   console.log("location: ", location);
       const apiKey = "d18f6d6eefcef4b3a33f7f1511ae4d76";
       const apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${location.coords.latitude}&lon=${location.coords.longitude}&appid=${apiKey}&units=metric`;
 
@@ -75,7 +76,6 @@ export default function Page() {
         const response = await fetch(apiUrl);
         const data = await response.json();
         setWeatherData(data);
-        // console.log(data);
       } catch (error) {
         console.error(error);
       }
@@ -86,14 +86,15 @@ export default function Page() {
   if (session && session.user) {
     return (
       <LinearGradient
-        colors={darkMode ? Themes.light.colors : Themes.dark.colors}
+        colors={darkMode ? Themes.dark.colors : Themes.light.colors}
         style={styles.container}
       >
-        <StatusBar barStyle={"light-content"} />
         <SafeAreaView>
-          <Header />
-          <Text style={styles.title}>welcome to sky quilt.</Text>
+          <StatusBar barStyle={"light-content"} />
+
+          <Header isEnabled={isEnabled} toggleSwitch={toggleSwitch} />
           <View style={styles.container}>
+            <Text style={styles.title}>welcome to sky quilt.</Text>
             {/* <Text style={styles.title}>welcome to sky quilt.</Text> */}
             {weatherData ? (
               <>
@@ -116,7 +117,6 @@ export default function Page() {
                   params: {
                     isTablet: isTablet,
                     userId: session.user.id,
-                    session: session,
                   },
                 }}
               >
@@ -136,7 +136,6 @@ export default function Page() {
                   params: {
                     isTablet: isTablet,
                     userId: session.user.id,
-                    session: session,
                   },
                 }}
               >
@@ -177,14 +176,12 @@ export default function Page() {
   } else {
     return (
       <LinearGradient
-        colors={darkMode ? Themes.light.colors : Themes.dark.colors}
+        colors={darkMode ? Themes.dark.colors : Themes.light.colors}
         style={styles.container}
       >
         <StatusBar barStyle={"light-content"} />
         <Header />
-        <Text style={styles.title}>
-          {session ? "make your account." : "welcome to sky quilt."}
-        </Text>
+        <Text style={styles.title}>welcome to sky quilt.</Text>
         <Auth />
       </LinearGradient>
     );

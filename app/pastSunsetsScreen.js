@@ -6,6 +6,7 @@ import {
   Image,
   StyleSheet,
   SafeAreaView,
+  StatusBar,
 } from "react-native";
 import supabase from "./Supabase";
 import { LinearGradient } from "expo-linear-gradient";
@@ -15,7 +16,7 @@ import { useLocalSearchParams } from "expo-router";
 
 export default function Page() {
   const defaultImage = require("../assets/defaultImage.png");
-  const params = useLocalSearchParams();
+  const { isTablet, userId } = useLocalSearchParams();
 
   const { darkMode } = useDarkMode();
   const [sunsetImages, setSunsetImages] = useState([]);
@@ -24,12 +25,10 @@ export default function Page() {
     const fetchSunsetImages = async () => {
       const { data, error } = await supabase.storage
         .from("sunset-bucket")
-        .list(params.userId);
+        .list(userId);
       console.log("data", data.length);
       setSunsetImages(
-        data
-          .filter((entry) => entry.name != params.userId)
-          .map((image) => image.name)
+        data.filter((entry) => entry.name != userId).map((image) => image.name)
       );
       console.log("images: ", sunsetImages);
     };
@@ -48,7 +47,7 @@ export default function Page() {
     const day = date.getDate();
     const dateString = `${month} ${day}`;
     const { data } = supabase.storage
-      .from(`sunset-bucket/${params.userId}`)
+      .from(`sunset-bucket/${userId}`)
       .getPublicUrl(item);
     return (
       <View style={styles.quiltTile}>
@@ -64,10 +63,11 @@ export default function Page() {
 
   return (
     <LinearGradient
-      colors={darkMode ? Themes.light.colors : Themes.dark.colors}
+      colors={darkMode ? Themes.dark.colors : Themes.light.colors}
       style={styles.container}
     >
       <SafeAreaView>
+        <StatusBar barStyle={"light-content"} />
         <View style={styles.container}>
           <Text style={styles.title}>my quilt</Text>
 
