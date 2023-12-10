@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, StatusBar, Dimensions } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  StatusBar,
+  Dimensions,
+  SafeAreaView,
+} from "react-native";
 import {
   requestForegroundPermissionsAsync,
   getCurrentPositionAsync,
@@ -13,7 +20,8 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import Header from "./header";
 import Auth from "./auth";
 import supabase from "./Supabase";
-// import Account from "./account";
+
+// add safe area view?
 
 const deviceMap = {
   [Device.DeviceType.PHONE]: "phone",
@@ -26,14 +34,10 @@ const windowWidth = Dimensions.get("window").width;
 export default function Page() {
   const { darkMode } = useDarkMode();
   const [weatherData, setWeatherData] = useState(null);
-  const [profileDone, setProfileDone] = useState(false);
-
-  // useEffect(() => {
-  //   if (profileDone) {
-  //     getProfile();
-  //     console.log(session.user.email);
-  //   }
-  // }, [session]);
+  // Device type
+  const [deviceType, setDeviceType] = useState(null);
+  const [session, setSession] = useState(null);
+  // console.log("session in index", session);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -44,10 +48,6 @@ export default function Page() {
       setSession(session);
     });
   }, []);
-
-  // Device type
-  const [deviceType, setDeviceType] = useState(null);
-  const [session, setSession] = useState(null);
 
   useEffect(() => {
     Device.getDeviceTypeAsync().then((deviceType) => {
@@ -84,113 +84,97 @@ export default function Page() {
   }, []);
 
   if (session && session.user) {
-    // if (profileDone) {
-    // console.log("profile done in app: ", profileDone);
     return (
       <LinearGradient
         colors={darkMode ? Themes.light.colors : Themes.dark.colors}
         style={styles.container}
       >
         <StatusBar barStyle={"light-content"} />
-        <Header />
-        <Text style={styles.title}>
-          {session ? "make your account." : "welcome to sky quilt."}
-        </Text>
-        <View style={styles.container}>
-          {/* <Text style={styles.title}>welcome to sky quilt.</Text> */}
-          {weatherData ? (
-            <>
-              <Text style={styles.city}>{weatherData.name}</Text>
-              <Text style={styles.temperature}>{`${(
-                weatherData.main.temp * 1.8 +
-                32
-              ).toFixed(2)} °F`}</Text>
-              <Text style={styles.description}>
-                {weatherData.weather[0].description}
-              </Text>
-            </>
-          ) : (
-            <Text style={styles.city}>fetching weather data...</Text>
-          )}
-          <View style={styles.buttonContainer}>
-            <Link
-              href={{
-                pathname: "/postSunsetScreen",
-                params: {
-                  isTablet: isTablet,
-                },
-              }}
-            >
-              <View style={styles.button}>
-                <Ionicons
-                  name="image-outline"
-                  color="white"
-                  size={60}
-                  style={styles.icon}
-                />
-                <Text style={styles.buttonText}>post today's sunset</Text>
-              </View>
-            </Link>
-            <Link
-              href={{
-                pathname: "/pastSunsetsScreen",
-                params: {
-                  isTablet: isTablet,
-                  session: session,
-                },
-              }}
-            >
-              <View style={styles.button}>
-                <Ionicons
-                  name="apps-outline"
-                  color="white"
-                  size={60}
-                  style={styles.icon}
-                />
-                <Text style={styles.buttonText}>past sunsets</Text>
-              </View>
-            </Link>
-            <Link
-              href={{
-                pathname: "/settings",
-                params: {
-                  isTablet: isTablet,
-                  email: session.user.email,
-                },
-              }}
-            >
-              <View style={styles.button}>
-                <Ionicons
-                  name="settings"
-                  color="white"
-                  size={60}
-                  style={styles.icon}
-                />
-                <Text style={styles.buttonText}>settings</Text>
-              </View>
-            </Link>
+        <SafeAreaView>
+          <Header />
+          <Text style={styles.title}>welcome to sky quilt.</Text>
+          <View style={styles.container}>
+            {/* <Text style={styles.title}>welcome to sky quilt.</Text> */}
+            {weatherData ? (
+              <>
+                <Text style={styles.city}>{weatherData.name}</Text>
+                <Text style={styles.temperature}>{`${(
+                  weatherData.main.temp * 1.8 +
+                  32
+                ).toFixed(2)} °F`}</Text>
+                <Text style={styles.description}>
+                  {weatherData.weather[0].description}
+                </Text>
+              </>
+            ) : (
+              <Text style={styles.city}>fetching weather data...</Text>
+            )}
+            <View style={styles.buttonContainer}>
+              <Link
+                href={{
+                  pathname: "/postSunsetScreen",
+                  params: {
+                    isTablet: isTablet,
+                    userId: session.user.id,
+                    session: session,
+                  },
+                }}
+              >
+                <View style={styles.button}>
+                  <Ionicons
+                    name="image-outline"
+                    color="white"
+                    size={60}
+                    style={styles.icon}
+                  />
+                  <Text style={styles.buttonText}>post today's sunset</Text>
+                </View>
+              </Link>
+              <Link
+                href={{
+                  pathname: "/pastSunsetsScreen",
+                  params: {
+                    isTablet: isTablet,
+                    userId: session.user.id,
+                    session: session,
+                  },
+                }}
+              >
+                <View style={styles.button}>
+                  <Ionicons
+                    name="apps-outline"
+                    color="white"
+                    size={60}
+                    style={styles.icon}
+                  />
+                  <Text style={styles.buttonText}>my quilt</Text>
+                </View>
+              </Link>
+              <Link
+                href={{
+                  pathname: "/settings",
+                  params: {
+                    isTablet: isTablet,
+                    email: session.user.email,
+                  },
+                }}
+              >
+                <View style={styles.button}>
+                  <Ionicons
+                    name="settings"
+                    color="white"
+                    size={60}
+                    style={styles.icon}
+                  />
+                  <Text style={styles.buttonText}>settings</Text>
+                </View>
+              </Link>
+            </View>
           </View>
-        </View>
+        </SafeAreaView>
       </LinearGradient>
     );
-    // } else {
-    //   console.log("profile done in app: ", profileDone);
-    //   return (
-    //     <LinearGradient
-    //       colors={darkMode ? Themes.light.colors : Themes.dark.colors}
-    //       style={styles.container}
-    //     >
-    //       <StatusBar barStyle={"light-content"} />
-    //       <Header />
-    //       <Text style={styles.title}>
-    //         {session ? "make your account." : "welcome to sky quilt."}
-    //       </Text>
-    //       <Account session={session} setProfileDone={setProfileDone} />
-    //     </LinearGradient>
-    //   );
-    // }
   } else {
-    // console.log("profile done in app: ", profileDone);
     return (
       <LinearGradient
         colors={darkMode ? Themes.light.colors : Themes.dark.colors}

@@ -14,6 +14,7 @@ import { Themes } from "../assets/Themes";
 import { useLocalSearchParams } from "expo-router";
 
 export default function Page() {
+  const defaultImage = require("../assets/defaultImage.png");
   const params = useLocalSearchParams();
 
   const { darkMode } = useDarkMode();
@@ -23,10 +24,11 @@ export default function Page() {
     const fetchSunsetImages = async () => {
       const { data, error } = await supabase.storage
         .from("sunset-bucket")
-        .list();
+        .list(params.userId);
+      console.log("data", data.length);
       setSunsetImages(
         data
-          .filter((entry) => entry.name != ".emptyFolderPlaceholder")
+          .filter((entry) => entry.name != params.userId)
           .map((image) => image.name)
       );
       console.log("images: ", sunsetImages);
@@ -45,10 +47,16 @@ export default function Page() {
     console.log(month);
     const day = date.getDate();
     const dateString = `${month} ${day}`;
-    const { data } = supabase.storage.from("sunset-bucket").getPublicUrl(item);
+    const { data } = supabase.storage
+      .from(`sunset-bucket/${params.userId}`)
+      .getPublicUrl(item);
     return (
       <View style={styles.quiltTile}>
-        <Image source={{ uri: data.publicUrl }} style={styles.imageItem} />
+        <Image
+          source={{ uri: data.publicUrl }}
+          style={styles.imageItem}
+          defaultSource={defaultImage}
+        />
         <Text style={styles.caption}>{dateString}</Text>
       </View>
     );
@@ -61,7 +69,7 @@ export default function Page() {
     >
       <SafeAreaView>
         <View style={styles.container}>
-          <Text style={styles.title}>past sunsets</Text>
+          <Text style={styles.title}>my quilt</Text>
 
           <FlatList
             data={sunsetImages}

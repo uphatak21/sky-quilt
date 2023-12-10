@@ -1,86 +1,76 @@
 import { useState, useEffect } from "react";
 import supabase from "./Supabase";
-import { StyleSheet, View, Alert } from "react-native";
+import { StyleSheet, View, SafeAreaView, StatusBar } from "react-native";
 import { Button, Text } from "react-native-elements";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, router } from "expo-router";
+import { Themes } from "../assets/Themes";
+import { LinearGradient } from "expo-linear-gradient";
+import { useDarkMode } from "../assets/Themes/DarkModeContext";
+import Auth from "./auth";
 
 export default function Page() {
+  // const [signedOut, setSignedOut] = useState(false);
   const params = useLocalSearchParams();
+  const session = params.session;
+  // const setSession = params.setSession;
+
+  // useEffect(() => {
+  //   try {
+  //     supabase.auth.getSession().then(({ data: { session } }) => {
+  //       setSession(session);
+  //     });
+
+  //     supabase.auth.onAuthStateChange((_event, session) => {
+  //       setSession(session);
+  //     });
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // }, []);
+
   console.log("params: ", params);
+  console.log(params.session != null ? "session: true" : "session: false");
   const email = params.email;
-  // const [email, setEmail] = useState("");
+  const { darkMode } = useDarkMode();
+  // console.log(supabase.auth.user());
+  if (session) {
+    return <Auth />;
+  } else {
+    return (
+      <LinearGradient
+        colors={darkMode ? Themes.light.colors : Themes.dark.colors}
+        style={styles.container}
+      >
+        <StatusBar barStyle={"light-content"} />
+        <SafeAreaView>
+          <View style={styles.container}>
+            <View style={[styles.verticallySpaced, styles.mt20]}>
+              <Text>Your email: {email}</Text>
+            </View>
 
-  // async function getProfile() {
-  //   try {
-  //     setLoading(true);
-  //     if (!session?.user) throw new Error("No user on the session!");
-
-  //     // const { data, error, status } = await supabase
-  //     //   .from("profiles")
-  //     //   .select(`username, website, avatar_url`)
-  //     //   .eq("id", session?.user.id)
-  //     //   .single();
-  //     // if (error && status !== 406) {
-  //     //   throw error;
-  //     // }
-
-  //     if (data) {
-  //       setUsername(data.username);
-  //       setWebsite(data.website);
-  //       setAvatarUrl(data.avatar_url);
-  //     }
-  //   } catch (error) {
-  //     if (error instanceof Error) {
-  //       Alert.alert(error.message);
-  //     }
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // }
-
-  // async function updateProfile({ username, website, avatar_url }) {
-  //   try {
-  //     setLoading(true);
-  //     if (!session?.user) throw new Error("No user on the session!");
-
-  //     const updates = {
-  //       id: session?.user.id,
-  //       username,
-  //       website,
-  //       avatar_url,
-  //       updated_at: new Date(),
-  //     };
-
-  //     const { error } = await supabase.from("profiles").upsert(updates);
-
-  //     if (error) {
-  //       throw error;
-  //     }
-  //   } catch (error) {
-  //     if (error instanceof Error) {
-  //       Alert.alert(error.message);
-  //     }
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // }
-  return (
-    <View style={styles.container}>
-      <View style={[styles.verticallySpaced, styles.mt20]}>
-        <Text>Your email: {email}</Text>
-      </View>
-
-      <View style={styles.verticallySpaced}>
-        <Button title="Sign Out" onPress={() => supabase.auth.signOut()} />
-      </View>
-    </View>
-  );
+            <View style={styles.verticallySpaced}>
+              <Button
+                title="Sign Out"
+                onPress={() => {
+                  // console.log("before press: ", params.session);
+                  supabase.auth.signOut();
+                  router.replace("/");
+                }}
+              />
+            </View>
+          </View>
+        </SafeAreaView>
+      </LinearGradient>
+    );
+  }
 }
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 40,
-    padding: 12,
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingTop: 30,
   },
   verticallySpaced: {
     paddingTop: 4,

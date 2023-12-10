@@ -20,9 +20,12 @@ import { decode } from "base64-arraybuffer";
 
 export default function Page() {
   const params = useLocalSearchParams();
+  console.log(params);
 
   const { darkMode } = useDarkMode();
   const [selectedImage, setSelectedImage] = useState(null);
+
+  const defaultImage = require("../assets/defaultImage.png");
 
   useEffect(() => {
     // Check if a sunset image has been uploaded for the current day
@@ -33,7 +36,7 @@ export default function Page() {
 
         const { data, error } = await supabase.storage
           .from("sunset-bucket")
-          .list();
+          .list(params.userId);
 
         if (error) {
           console.error(
@@ -47,7 +50,7 @@ export default function Page() {
           if (filteredEntries.length > 0) {
             console.log("TRUE");
             const { data } = supabase.storage
-              .from("sunset-bucket")
+              .from(`sunset-bucket/${params.userId}`)
               .getPublicUrl(`${currentDate}.png`);
             console.log("public url", data);
             setSelectedImage(data.publicUrl);
@@ -62,6 +65,8 @@ export default function Page() {
     };
     checkExistingSunsetImage();
   }, []);
+
+  // add some kinf of loading indicator
 
   useEffect(() => {
     getPermissionAsync();
@@ -109,10 +114,11 @@ export default function Page() {
   const uploadImage = async (base64) => {
     try {
       const currentDate = new Date().toISOString().slice(0, 10);
+      // console.log("date: ", currentDate);
 
       const { data, error } = await supabase.storage
         .from("sunset-bucket")
-        .upload(`${currentDate}.png`, decode(base64), {
+        .upload(`${params.userId}/${currentDate}.png`, decode(base64), {
           cacheControl: "3600",
           upsert: false,
         });
@@ -148,6 +154,7 @@ export default function Page() {
                 <Image
                   source={{ uri: selectedImage }}
                   style={styles.imagePreview}
+                  defaultSource={defaultImage}
                 />
               </View>
             ) : (
