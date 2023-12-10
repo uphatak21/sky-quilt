@@ -1,12 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  StatusBar,
-  Pressable,
-  Dimensions,
-} from "react-native";
+import { View, Text, StyleSheet, StatusBar, Dimensions } from "react-native";
 import {
   requestForegroundPermissionsAsync,
   getCurrentPositionAsync,
@@ -16,10 +9,11 @@ import { useDarkMode } from "../assets/Themes/DarkModeContext";
 import { Link } from "expo-router/";
 import * as Device from "expo-device";
 import { Themes } from "../assets/Themes";
-// import { Auth } from "@supabase/auth-ui-react";
-// import { ThemeSupa } from "@supabase/auth-ui-shared";
-import supabase from "./Supabase";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import Header from "./header";
+import Auth from "./auth";
+import supabase from "./Supabase";
+// import Account from "./account";
 
 const deviceMap = {
   [Device.DeviceType.PHONE]: "phone",
@@ -27,88 +21,33 @@ const deviceMap = {
   [Device.DeviceType.UNKNOWN]: "unknown",
   [Device.DeviceType.DESKTOP]: "desktop",
 };
-
 const windowWidth = Dimensions.get("window").width;
-const windowHeight = Dimensions.get("window").height;
-
-const Header = () => {
-  const { darkMode, toggleDarkMode } = useDarkMode();
-
-  return (
-    <View
-      style={{
-        flexDirection: "row",
-        justifyContent: "flex-end",
-        padding: 40,
-        width: "100%",
-      }}
-    >
-      <Pressable onPress={toggleDarkMode}>
-        <View
-          style={{
-            padding: 10,
-            backgroundColor: darkMode ? "#555" : "#ddd",
-            borderRadius: 8,
-          }}
-        >
-          <Ionicons
-            name="apps-outline"
-            color="white"
-            size={60}
-            style={styles.icon}
-          />
-          {/* <Text>{darkMode ? "Light Mode" : "Dark Mode"}</Text> */}
-        </View>
-      </Pressable>
-    </View>
-  );
-};
 
 export default function Page() {
   const { darkMode } = useDarkMode();
   const [weatherData, setWeatherData] = useState(null);
+  const [profileDone, setProfileDone] = useState(false);
+
+  // useEffect(() => {
+  //   if (profileDone) {
+  //     getProfile();
+  //     console.log(session.user.email);
+  //   }
+  // }, [session]);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+  }, []);
 
   // Device type
   const [deviceType, setDeviceType] = useState(null);
   const [session, setSession] = useState(null);
-
-  // useEffect(() => {
-  //   supabase.auth.getSession().then(({ data: { session } }) => {
-  //     console.log(session);
-  //     setSession(session);
-  //   });
-
-  //   const {
-  //     data: { subscription },
-  //   } = supabase.auth.onAuthStateChange((event, session) => {
-  //     setSession(session);
-  //   });
-
-  //   return () => subscription.unsubscribe();
-  // }, []);
-
-  // Sign Up
-  const signUp = async (email, password) => {
-    const { user, error } = await supabase.auth.signUp({ email, password });
-    return { user, error };
-  };
-
-  // Sign In
-  const signIn = async (email, password) => {
-    const { user, error } = await supabase.auth.signIn({ email, password });
-    return { user, error };
-  };
-
-  // Sign Out
-  const signOut = async () => {
-    await supabase.auth.signOut();
-  };
-
-  // Check Authentication Status
-  const checkAuthStatus = () => {
-    const user = supabase.auth.user();
-    return user;
-  };
 
   useEffect(() => {
     Device.getDeviceTypeAsync().then((deviceType) => {
@@ -144,74 +83,128 @@ export default function Page() {
     fetchWeatherData();
   }, []);
 
-  // if (!session) {
-  //   return <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} />;
-  // }
-
-  return (
-    <LinearGradient
-      colors={darkMode ? Themes.light.colors : Themes.dark.colors}
-      style={styles.container}
-    >
-      <StatusBar barStyle={"light-content"} />
-      <Header />
-      <View style={styles.container}>
-        <Text style={styles.title}>welcome to sky quilt.</Text>
-        {weatherData ? (
-          <>
-            <Text style={styles.city}>{weatherData.name}</Text>
-            <Text style={styles.temperature}>{`${(
-              weatherData.main.temp * 1.8 +
-              32
-            ).toFixed(2)} °F`}</Text>
-            <Text style={styles.description}>
-              {weatherData.weather[0].description}
-            </Text>
-          </>
-        ) : (
-          <Text style={styles.city}>fetching weather data...</Text>
-        )}
-        <View style={styles.buttonContainer}>
-          <Link
-            href={{
-              pathname: "/postSunsetScreen",
-              params: {
-                isTablet: isTablet,
-              },
-            }}
-          >
-            <View style={styles.button}>
-              <Ionicons
-                name="image-outline"
-                color="white"
-                size={60}
-                style={styles.icon}
-              />
-              <Text style={styles.buttonText}>post today's sunset</Text>
-            </View>
-          </Link>
-          <Link
-            href={{
-              pathname: "/pastSunsetsScreen",
-              params: {
-                isTablet: isTablet,
-              },
-            }}
-          >
-            <View style={styles.button}>
-              <Ionicons
-                name="apps-outline"
-                color="white"
-                size={60}
-                style={styles.icon}
-              />
-              <Text style={styles.buttonText}>past sunsets</Text>
-            </View>
-          </Link>
+  if (session && session.user) {
+    // if (profileDone) {
+    // console.log("profile done in app: ", profileDone);
+    return (
+      <LinearGradient
+        colors={darkMode ? Themes.light.colors : Themes.dark.colors}
+        style={styles.container}
+      >
+        <StatusBar barStyle={"light-content"} />
+        <Header />
+        <Text style={styles.title}>
+          {session ? "make your account." : "welcome to sky quilt."}
+        </Text>
+        <View style={styles.container}>
+          {/* <Text style={styles.title}>welcome to sky quilt.</Text> */}
+          {weatherData ? (
+            <>
+              <Text style={styles.city}>{weatherData.name}</Text>
+              <Text style={styles.temperature}>{`${(
+                weatherData.main.temp * 1.8 +
+                32
+              ).toFixed(2)} °F`}</Text>
+              <Text style={styles.description}>
+                {weatherData.weather[0].description}
+              </Text>
+            </>
+          ) : (
+            <Text style={styles.city}>fetching weather data...</Text>
+          )}
+          <View style={styles.buttonContainer}>
+            <Link
+              href={{
+                pathname: "/postSunsetScreen",
+                params: {
+                  isTablet: isTablet,
+                },
+              }}
+            >
+              <View style={styles.button}>
+                <Ionicons
+                  name="image-outline"
+                  color="white"
+                  size={60}
+                  style={styles.icon}
+                />
+                <Text style={styles.buttonText}>post today's sunset</Text>
+              </View>
+            </Link>
+            <Link
+              href={{
+                pathname: "/pastSunsetsScreen",
+                params: {
+                  isTablet: isTablet,
+                  session: session,
+                },
+              }}
+            >
+              <View style={styles.button}>
+                <Ionicons
+                  name="apps-outline"
+                  color="white"
+                  size={60}
+                  style={styles.icon}
+                />
+                <Text style={styles.buttonText}>past sunsets</Text>
+              </View>
+            </Link>
+            <Link
+              href={{
+                pathname: "/settings",
+                params: {
+                  isTablet: isTablet,
+                  email: session.user.email,
+                },
+              }}
+            >
+              <View style={styles.button}>
+                <Ionicons
+                  name="settings"
+                  color="white"
+                  size={60}
+                  style={styles.icon}
+                />
+                <Text style={styles.buttonText}>settings</Text>
+              </View>
+            </Link>
+          </View>
         </View>
-      </View>
-    </LinearGradient>
-  );
+      </LinearGradient>
+    );
+    // } else {
+    //   console.log("profile done in app: ", profileDone);
+    //   return (
+    //     <LinearGradient
+    //       colors={darkMode ? Themes.light.colors : Themes.dark.colors}
+    //       style={styles.container}
+    //     >
+    //       <StatusBar barStyle={"light-content"} />
+    //       <Header />
+    //       <Text style={styles.title}>
+    //         {session ? "make your account." : "welcome to sky quilt."}
+    //       </Text>
+    //       <Account session={session} setProfileDone={setProfileDone} />
+    //     </LinearGradient>
+    //   );
+    // }
+  } else {
+    // console.log("profile done in app: ", profileDone);
+    return (
+      <LinearGradient
+        colors={darkMode ? Themes.light.colors : Themes.dark.colors}
+        style={styles.container}
+      >
+        <StatusBar barStyle={"light-content"} />
+        <Header />
+        <Text style={styles.title}>
+          {session ? "make your account." : "welcome to sky quilt."}
+        </Text>
+        <Auth />
+      </LinearGradient>
+    );
+  }
 }
 
 const styles = StyleSheet.create({
@@ -219,6 +212,8 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    // borderColor: "blue",
+    // borderWidth: 5,
   },
   title: {
     fontSize: windowWidth * 0.072,
@@ -270,5 +265,17 @@ const styles = StyleSheet.create({
     // borderColor: "blue",
     // borderWidth: 5,
     // resizeMode: "contain",
+  },
+  // container: {
+  //   marginTop: 40,
+  //   padding: 12,
+  // },
+  verticallySpaced: {
+    paddingTop: 4,
+    paddingBottom: 4,
+    alignSelf: "stretch",
+  },
+  mt20: {
+    marginTop: 20,
   },
 });
