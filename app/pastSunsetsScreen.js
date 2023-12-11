@@ -7,7 +7,6 @@ import {
   StyleSheet,
   SafeAreaView,
   StatusBar,
-  ActivityIndicator,
   Dimensions,
 } from "react-native";
 import supabase from "./Supabase";
@@ -21,64 +20,41 @@ const windowWidth = Dimensions.get("window").width;
 export default function Page() {
   const defaultImage = require("../assets/defaultImage.png");
   const { isTablet, userId } = useLocalSearchParams();
-  // console.log("istablet: ", isTablet);
-
   const { darkMode } = useDarkMode();
   const [sunsetImages, setSunsetImages] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  // taken from online
-  const convertUTCToLocalTime = (dateString) => {
-    let date = new Date(dateString);
-    const milliseconds = Date.UTC(
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate(),
-      date.getHours(),
-      date.getMinutes(),
-      date.getSeconds()
-    );
-    const localTime = new Date(milliseconds);
-    // localTime.getDate(); // local date
-    // localTime.getHours(); // local hour
-    return localTime;
-  };
-
-  // add a try catch here?
 
   useEffect(() => {
     const fetchSunsetImages = async () => {
-      const { data, error } = await supabase.storage
-        .from("sunset-bucket")
-        .list(userId);
-      // console.log("data", data.length);
-      setSunsetImages(
-        data
-          .filter(
-            (entry) =>
-              entry.name != userId && entry.name != ".emptyFolderPlaceholder"
-          )
-          .map((image) => image.name)
-      );
-      setLoading(false);
-      // console.log("images: ", sunsetImages);
-      // console.log("images 2: ", data);
+      try {
+        const { data, error } = await supabase.storage
+          .from("sunset-bucket")
+          .list(userId);
+        setSunsetImages(
+          data
+            .filter(
+              (entry) =>
+                entry.name != userId && entry.name != ".emptyFolderPlaceholder"
+            )
+            .map((image) => image.name)
+        );
+      } catch (error) {
+        console.error(error);
+      }
     };
     fetchSunsetImages();
   }, []);
 
   const renderSunsetImage = ({ item }) => {
-    // console.log("item", item, typeof item);
-
     const itemDate = item.slice(0, -4);
     const date = new Date(itemDate);
+    // CITATION: https://stackoverflow.com/questions/59310560/date-formatting-in-react-native
     const month = date
       .toLocaleString("en-us", {
         month: "short",
       })
       .toLocaleLowerCase();
-    // console.log(date);
     const day = date.getDate() + 1;
+    // CITATION: https://stackoverflow.com/questions/59101544/how-to-get-last-2-digits-of-year-from-javascript-date
     const year = date.getFullYear() % 100;
     const dateString = `${month} ${day}, '${year}`;
     const { data } = supabase.storage
@@ -86,16 +62,11 @@ export default function Page() {
       .getPublicUrl(item);
     return (
       <View style={styles.quiltTile}>
-        {loading ? (
-          <ActivityIndicator size="large" color="#0000ff" />
-        ) : (
-          <Image
-            source={{ uri: data.publicUrl }}
-            style={styles.imageItem}
-            defaultSource={defaultImage}
-          />
-        )}
-
+        <Image
+          source={{ uri: data.publicUrl }}
+          style={styles.imageItem}
+          defaultSource={defaultImage}
+        />
         <Text
           style={[
             styles.caption,
@@ -119,7 +90,6 @@ export default function Page() {
         <StatusBar barStyle={"light-content"} />
         <View style={styles.container}>
           <Text style={styles.title}>my quilt</Text>
-
           <FlatList
             data={sunsetImages}
             keyExtractor={(item) => item}
@@ -138,14 +108,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingTop: 30,
-    // borderWidth: 5,
-    // borderColor: "blue",
   },
   title: {
     fontSize: windowWidth * 0.072,
     fontWeight: "bold",
     color: "white",
-    // fontFamily: "sans-serif",
     marginBottom: 20,
   },
   imageItem: {
@@ -153,8 +120,6 @@ const styles = StyleSheet.create({
     height: windowWidth * 0.3,
     margin: 5,
     borderRadius: 30,
-    // borderWidth: 5,
-    // borderColor: "blue",
   },
   caption: {
     fontSize: windowWidth * 0.04,

@@ -21,6 +21,7 @@ import Header from "./header";
 import Auth from "./auth";
 import supabase from "./Supabase";
 
+// CITATION: Ed post, Assignment 2 (https://edstem.org/us/courses/47955/discussion/3616064)
 const deviceMap = {
   [Device.DeviceType.PHONE]: "phone",
   [Device.DeviceType.TABLET]: "tablet",
@@ -36,6 +37,7 @@ export default function Page() {
   const [deviceType, setDeviceType] = useState(null);
   const [session, setSession] = useState(null);
   const [isEnabled, setIsEnabled] = useState(false);
+  const isTablet = deviceType === "tablet";
 
   const toggleSwitch = () => {
     setIsEnabled((previousState) => !previousState);
@@ -57,10 +59,8 @@ export default function Page() {
       setDeviceType(deviceMap[deviceType]);
     });
   }, []);
-  const isTablet = deviceType === "tablet";
 
   useEffect(() => {
-    // Expo docs for Location
     const fetchWeatherData = async () => {
       const { status } = await requestForegroundPermissionsAsync();
 
@@ -68,11 +68,9 @@ export default function Page() {
         console.log("Permission to access location was denied");
         return;
       }
-
       const location = await getCurrentPositionAsync({});
       const apiKey = "d18f6d6eefcef4b3a33f7f1511ae4d76";
-      const apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${location.coords.latitude}&lon=${location.coords.longitude}&appid=${apiKey}&units=metric`;
-
+      const apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${location.coords.latitude}&lon=${location.coords.longitude}&appid=${apiKey}&units=imperial`;
       try {
         const response = await fetch(apiUrl);
         const data = await response.json();
@@ -98,10 +96,9 @@ export default function Page() {
             {weatherData ? (
               <>
                 <Text style={styles.city}>{weatherData.name}</Text>
-                <Text style={styles.temperature}>{`${(
-                  weatherData.main.temp * 1.8 +
-                  32
-                ).toFixed(2)} °F`}</Text>
+                <Text
+                  style={styles.temperature}
+                >{`${weatherData.main.temp} °F`}</Text>
                 <Text style={styles.description}>
                   {weatherData.weather[0].description}
                 </Text>
@@ -192,20 +189,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    // borderColor: "blue",
-    // borderWidth: 5,
-    // alignItems: "center",
-    // justifyContent: "center",
   },
   smallContainer: {
-    // marginTop: windowHeight * 0.05,
     justifyContent: "flex-start",
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    // alignItems: "center",
-    // borderColor: "blue",
-    // borderWidth: 5,
   },
   title: {
     marginTop: windowHeight * 0.1,
@@ -214,8 +203,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     color: "white",
     textAlign: "center",
-    // borderColor: "blue",
-    // borderWidth: 5,
   },
   city: {
     fontSize: windowWidth * 0.06,
@@ -233,19 +220,14 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     marginTop: 60,
-    // borderColor: "yellow",
-    // borderWidth: 5,
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
     height: windowHeight * 0.2,
-    // flex: 1,
   },
   buttonText: {
     color: "white",
     fontSize: windowWidth * 0.04,
-    // borderColor: "yellow",
-    // borderWidth: 5,
   },
   button: {
     justifyContent: "center",
@@ -254,19 +236,5 @@ const styles = StyleSheet.create({
     height: "100%",
     width: windowWidth * 0.3,
     flex: 1,
-    // flexDirection: "row",
-    // borderColor: "blue",
-    // borderWidth: 5,
-  },
-  // icon: {
-  //   height: "100%",
-  // },
-  verticallySpaced: {
-    paddingTop: 4,
-    paddingBottom: 4,
-    alignSelf: "stretch",
-  },
-  mt20: {
-    marginTop: 20,
   },
 });

@@ -1,17 +1,8 @@
 import React, { useState } from "react";
-import {
-  Alert,
-  StyleSheet,
-  View,
-  Dimensions,
-  Pressable,
-  Text,
-} from "react-native";
+import { StyleSheet, View, Dimensions } from "react-native";
 import supabase from "./Supabase";
 import { Button, Input } from "react-native-elements";
-// change to be a pressable?
 
-const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 
 export default function Auth() {
@@ -20,7 +11,6 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
 
   async function signInWithEmail() {
-    console.log("pressed");
     setLoading(true);
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -30,12 +20,10 @@ export default function Auth() {
     } catch (error) {
       console.error(error);
     }
-    // if (error) Alert.alert(error.message);
     setLoading(false);
   }
 
   async function signUpWithEmail() {
-    console.log("pressed");
     setLoading(true);
     try {
       const { data, error } = await supabase.auth.signUp({
@@ -45,7 +33,6 @@ export default function Auth() {
     } catch (error) {
       console.error(error);
     }
-    // if (error) Alert.alert(error.message);
     setLoading(false);
   }
 
@@ -80,9 +67,6 @@ export default function Auth() {
           style={styles.button}
         />
       </View>
-      {/* <Pressable style={styles.buttonContainer} onPress={signInWithEmail}>
-        <Text style={styles.buttonText}>sign in</Text>
-      </Pressable> */}
       <View style={styles.verticallySpaced}>
         <Button
           title="Sign up"
@@ -90,12 +74,6 @@ export default function Auth() {
           onPress={() => signUpWithEmail()}
         />
       </View>
-      {/* <Pressable
-        style={styles.buttonContainer}
-        onPress={() => signUpWithEmail()}
-      >
-        <Text style={styles.buttonText}>sign up</Text>
-      </Pressable> */}
     </View>
   );
 }
@@ -103,11 +81,8 @@ export default function Auth() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // justifyContent: "center",
     alignItems: "center",
     width: "90%",
-    // borderColor: "blue",
-    // borderWidth: 5,
     marginTop: windowHeight * 0.1,
   },
   verticallySpaced: {
@@ -117,26 +92,5 @@ const styles = StyleSheet.create({
   },
   mt20: {
     marginTop: 20,
-  },
-  buttonContainer: {
-    borderRadius: 8,
-    backgroundColor: "#3498db",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
-    marginTop: 20,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: windowWidth * 0.04,
-    fontWeight: "bold",
-    textAlign: "center",
   },
 });

@@ -1,3 +1,4 @@
+// CITATION: https://medium.com/lets-make-something-up/creating-light-dark-mode-on-a-react-app-with-context-589a5465f639
 import React, { createContext, useState, useContext } from "react";
 
 const DarkModeContext = createContext();

@@ -14,7 +14,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useDarkMode } from "../assets/Themes/DarkModeContext";
 
 const windowWidth = Dimensions.get("window").width;
-const windowHeight = Dimensions.get("window").height;
 
 export default function Page() {
   const { isTablet, email } = useLocalSearchParams();
@@ -63,8 +62,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     width: "100%",
-    // borderColor: "blue",
-    // borderWidth: 5,
   },
   verticallySpaced: {
     paddingTop: 10,
@@ -76,16 +73,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     fontSize: windowWidth * 0.04,
-    // fontWeight: "bold",
   },
   title: {
-    // marginTop: windowHeight * 0.1,
     fontSize: windowWidth * 0.072,
     fontWeight: "bold",
     marginBottom: 10,
     color: "white",
     textAlign: "center",
-    // borderColor: "blue",
-    // borderWidth: 5,
   },
 });

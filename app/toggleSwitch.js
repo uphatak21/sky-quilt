@@ -20,21 +20,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
-  toggle: {
-    width: 50,
-    height: 30,
-    borderRadius: 15,
-    margin: 5,
-  },
-  toggleOn: {
-    backgroundColor: "#4CAF50",
-  },
-  toggleOff: {
-    backgroundColor: "#ddd",
-  },
-  switch: {
-    marginLeft: 10,
-  },
 });
 
 export default ToggleSwitch;

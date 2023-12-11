@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import {
-  // Button,
   Image,
   View,
   Text,
@@ -8,7 +7,6 @@ import {
   Alert,
   SafeAreaView,
   StatusBar,
-  ActivityIndicator,
   Dimensions,
 } from "react-native";
 import { Button } from "react-native-elements";
@@ -20,22 +18,15 @@ import { Themes } from "../assets/Themes";
 import { useLocalSearchParams } from "expo-router";
 import { decode } from "base64-arraybuffer";
 
-// const testing = false;
-
-// add a loading indicator!!
-
 const windowWidth = Dimensions.get("window").width;
 
 export default function Page() {
   const { isTablet, userId } = useLocalSearchParams();
-
   const { darkMode } = useDarkMode();
   const [selectedImage, setSelectedImage] = useState(null);
-  const [loading, setLoading] = useState(true);
-
   const defaultImage = require("../assets/defaultImage.png");
 
-  // taken from online
+  // CITATION: https://zuhairnaqi.medium.com/react-native-conversion-of-date-timezone-8fec3f76c1a5
   const convertUTCToLocalTime = (dateString) => {
     let date = new Date(dateString);
     const milliseconds = Date.UTC(
@@ -47,21 +38,15 @@ export default function Page() {
       date.getSeconds()
     );
     const localTime = new Date(milliseconds);
-    // localTime.getDate(); // local date
-    // localTime.getHours(); // local hour
     return localTime;
   };
 
   useEffect(() => {
-    // Check if a sunset image has been uploaded for the current day
     const checkExistingSunsetImage = async () => {
       try {
         const currentDate = convertUTCToLocalTime(new Date().toISOString())
           .toISOString()
           .slice(0, 10);
-
-        console.log("current date: ", currentDate);
-        console.log("userId: ", userId);
 
         const { data, error } = await supabase.storage
           .from("sunset-bucket")
@@ -77,13 +62,10 @@ export default function Page() {
             entry.name.includes(currentDate)
           );
           if (filteredEntries.length > 0) {
-            // console.log("TRUE");
             const { data } = supabase.storage
               .from(`sunset-bucket/${userId}`)
               .getPublicUrl(`${currentDate}.png`);
-            // console.log("public url", data);
             setSelectedImage(data.publicUrl);
-            setLoading(false);
           }
         }
       } catch (error) {
@@ -95,8 +77,6 @@ export default function Page() {
     };
     checkExistingSunsetImage();
   }, []);
-
-  // add some kinf of loading indicator
 
   useEffect(() => {
     getPermissionAsync();
@@ -142,16 +122,13 @@ export default function Page() {
     }
   };
 
-  //printing the wrong date?
-
   const uploadImage = async (base64, uri) => {
     try {
       const currentDate = convertUTCToLocalTime(new Date().toISOString())
         .toISOString()
         .slice(0, 10);
 
-      console.log("date we uploaded: ", currentDate);
-
+      // CITATION: https://stackoverflow.com/questions/72300047/uploading-base64-images-to-supabase
       const { data, error } = await supabase.storage
         .from("sunset-bucket")
         .upload(`${userId}/${currentDate}.png`, decode(base64), {
@@ -162,16 +139,13 @@ export default function Page() {
       if (error) {
         console.error("First error uploading image:", error);
       } else {
-        console.log("Image uploaded successfully:", data);
         setSelectedImage(uri);
-        setLoading(false);
       }
     } catch (error) {
       console.error("Second error uploading image:", error.message);
     }
   };
 
-  console.log(selectedImage);
   return (
     <LinearGradient
       colors={darkMode ? Themes.dark.colors : Themes.light.colors}
@@ -190,21 +164,6 @@ export default function Page() {
                   one of the only constants in life is that the sun rises and
                   sets.
                 </Text>
-                {/* {loading ? (
-                  <View style={styles.bodyComponent}>
-                    <ActivityIndicator
-                      size="large"
-                      color="#0000ff"
-                      // style={styles.styles.bodyComponent}
-                    />
-                  </View>
-                ) : (
-                  <Image
-                    source={{ uri: selectedImage }}
-                    style={[styles.imagePreview, styles.bodyComponent]}
-                    defaultSource={defaultImage}
-                  />
-                )} */}
                 <Image
                   source={{ uri: selectedImage }}
                   style={[styles.imagePreview, styles.bodyComponent]}
@@ -233,18 +192,13 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: "bold",
     color: "#FFFFFF",
-    // fontFamily: "sans-serif",
     marginBottom: 20,
     fontSize: windowWidth * 0.072,
-    // borderColor: "yellow",
-    // borderWidth: 5,
   },
   body: {
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
-    // borderColor: "blue",
-    // borderWidth: 5,
     flex: 1,
   },
   bodyComponent: {
@@ -264,11 +218,5 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 20,
     borderRadius: 30,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: windowWidth * 0.04,
-    fontWeight: "bold",
-    textAlign: "center",
   },
 });
