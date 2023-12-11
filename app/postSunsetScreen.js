@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
-  Button,
+  // Button,
   Image,
   View,
   Text,
@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   Dimensions,
 } from "react-native";
+import { Button } from "react-native-elements";
 import * as ImagePicker from "expo-image-picker";
 import { LinearGradient } from "expo-linear-gradient";
 import supabase from "./Supabase";
@@ -34,12 +35,33 @@ export default function Page() {
 
   const defaultImage = require("../assets/defaultImage.png");
 
+  // taken from online
+  const convertUTCToLocalTime = (dateString) => {
+    let date = new Date(dateString);
+    const milliseconds = Date.UTC(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      date.getHours(),
+      date.getMinutes(),
+      date.getSeconds()
+    );
+    const localTime = new Date(milliseconds);
+    // localTime.getDate(); // local date
+    // localTime.getHours(); // local hour
+    return localTime;
+  };
+
   useEffect(() => {
     // Check if a sunset image has been uploaded for the current day
     const checkExistingSunsetImage = async () => {
       try {
-        const currentDate = new Date().toISOString().slice(0, 10);
+        const currentDate = convertUTCToLocalTime(new Date().toISOString())
+          .toISOString()
+          .slice(0, 10);
+
         console.log("current date: ", currentDate);
+        console.log("userId: ", userId);
 
         const { data, error } = await supabase.storage
           .from("sunset-bucket")
@@ -55,11 +77,11 @@ export default function Page() {
             entry.name.includes(currentDate)
           );
           if (filteredEntries.length > 0) {
-            console.log("TRUE");
+            // console.log("TRUE");
             const { data } = supabase.storage
               .from(`sunset-bucket/${userId}`)
               .getPublicUrl(`${currentDate}.png`);
-            console.log("public url", data);
+            // console.log("public url", data);
             setSelectedImage(data.publicUrl);
             setLoading(false);
           }
@@ -124,9 +146,11 @@ export default function Page() {
 
   const uploadImage = async (base64, uri) => {
     try {
-      const currentDate = new Date().toISOString().slice(0, 10);
+      const currentDate = convertUTCToLocalTime(new Date().toISOString())
+        .toISOString()
+        .slice(0, 10);
 
-      // console.log("date: ", currentDate);
+      console.log("date we uploaded: ", currentDate);
 
       const { data, error } = await supabase.storage
         .from("sunset-bucket")
@@ -147,6 +171,7 @@ export default function Page() {
     }
   };
 
+  console.log(selectedImage);
   return (
     <LinearGradient
       colors={darkMode ? Themes.dark.colors : Themes.light.colors}
@@ -165,25 +190,29 @@ export default function Page() {
                   one of the only constants in life is that the sun rises and
                   sets.
                 </Text>
-                {loading ? (
-                  <ActivityIndicator
-                    size="large"
-                    color="#0000ff"
-                    style={styles.styles.bodyComponent}
-                  />
+                {/* {loading ? (
+                  <View style={styles.bodyComponent}>
+                    <ActivityIndicator
+                      size="large"
+                      color="#0000ff"
+                      // style={styles.styles.bodyComponent}
+                    />
+                  </View>
                 ) : (
                   <Image
                     source={{ uri: selectedImage }}
                     style={[styles.imagePreview, styles.bodyComponent]}
                     defaultSource={defaultImage}
                   />
-                )}
+                )} */}
+                <Image
+                  source={{ uri: selectedImage }}
+                  style={[styles.imagePreview, styles.bodyComponent]}
+                  defaultSource={defaultImage}
+                />
               </View>
             ) : (
-              <Button
-                title="what did your sunset look like today?"
-                onPress={pickAndUploadImage}
-              />
+              <Button title="post my sunset" onPress={pickAndUploadImage} />
             )}
           </View>
         </View>
@@ -235,5 +264,11 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 20,
     borderRadius: 30,
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: windowWidth * 0.04,
+    fontWeight: "bold",
+    textAlign: "center",
   },
 });

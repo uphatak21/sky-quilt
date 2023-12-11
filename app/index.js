@@ -92,11 +92,9 @@ export default function Page() {
       >
         <SafeAreaView>
           <StatusBar barStyle={"light-content"} />
-
           <Header isEnabled={isEnabled} toggleSwitch={toggleSwitch} />
-          <View style={styles.container}>
-            <Text style={styles.title}>welcome to sky quilt.</Text>
-            {/* <Text style={styles.title}>welcome to sky quilt.</Text> */}
+          <Text style={styles.title}>welcome to sky quilt.</Text>
+          <View style={styles.smallContainer}>
             {weatherData ? (
               <>
                 <Text style={styles.city}>{weatherData.name}</Text>
@@ -181,7 +179,7 @@ export default function Page() {
         style={styles.container}
       >
         <StatusBar barStyle={"light-content"} />
-        <Header />
+        <Header isEnabled={isEnabled} toggleSwitch={toggleSwitch} />
         <Text style={styles.title}>welcome to sky quilt.</Text>
         <Auth />
       </LinearGradient>
@@ -196,12 +194,28 @@ const styles = StyleSheet.create({
     alignItems: "center",
     // borderColor: "blue",
     // borderWidth: 5,
+    // alignItems: "center",
+    // justifyContent: "center",
+  },
+  smallContainer: {
+    // marginTop: windowHeight * 0.05,
+    justifyContent: "flex-start",
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    // alignItems: "center",
+    // borderColor: "blue",
+    // borderWidth: 5,
   },
   title: {
+    marginTop: windowHeight * 0.1,
     fontSize: windowWidth * 0.072,
     fontWeight: "bold",
     marginBottom: 10,
     color: "white",
+    textAlign: "center",
+    // borderColor: "blue",
+    // borderWidth: 5,
   },
   city: {
     fontSize: windowWidth * 0.06,
@@ -224,21 +238,16 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    height: windowHeight * 0.1,
+    height: windowHeight * 0.2,
     // flex: 1,
   },
   buttonText: {
     color: "white",
     fontSize: windowWidth * 0.04,
+    // borderColor: "yellow",
+    // borderWidth: 5,
   },
   button: {
-    // borderRadius: 90,
-    // backgroundColor: "white",
-    // flexDirection: "column",
-    // flex: 1,
-    // width: "40%",
-    // borderColor: "blue",
-    // borderWidth: 5,
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
@@ -246,13 +255,12 @@ const styles = StyleSheet.create({
     width: windowWidth * 0.3,
     flex: 1,
     // flexDirection: "row",
-  },
-  icon: {
-    // borderRadius: 50,
     // borderColor: "blue",
     // borderWidth: 5,
-    // resizeMode: "contain",
   },
+  // icon: {
+  //   height: "100%",
+  // },
   verticallySpaced: {
     paddingTop: 4,
     paddingBottom: 4,

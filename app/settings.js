@@ -5,14 +5,16 @@ import {
   SafeAreaView,
   StatusBar,
   Dimensions,
+  Text,
 } from "react-native";
-import { Button, Text } from "react-native-elements";
+import { Button } from "react-native-elements";
 import { useLocalSearchParams, router } from "expo-router";
 import { Themes } from "../assets/Themes";
 import { LinearGradient } from "expo-linear-gradient";
 import { useDarkMode } from "../assets/Themes/DarkModeContext";
 
 const windowWidth = Dimensions.get("window").width;
+const windowHeight = Dimensions.get("window").height;
 
 export default function Page() {
   const { isTablet, email } = useLocalSearchParams();
@@ -26,13 +28,23 @@ export default function Page() {
       <SafeAreaView>
         <StatusBar barStyle={"light-content"} />
         <View style={styles.container}>
+          <Text style={styles.title}>settings</Text>
           <View style={[styles.verticallySpaced]}>
-            <Text style={styles.bodyText}>Your email: {email}</Text>
+            <Text
+              style={[
+                styles.bodyText,
+                darkMode
+                  ? { color: Themes.dark.text }
+                  : { color: Themes.light.text },
+              ]}
+            >
+              Your email: {email}
+            </Text>
           </View>
 
           <View style={styles.verticallySpaced}>
             <Button
-              title="Sign Out"
+              title="sign out"
               onPress={() => {
                 supabase.auth.signOut();
                 router.replace("/");
@@ -50,8 +62,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 20,
-    paddingTop: 50,
+    width: "100%",
+    // borderColor: "blue",
+    // borderWidth: 5,
   },
   verticallySpaced: {
     paddingTop: 10,
@@ -64,5 +77,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     fontSize: windowWidth * 0.04,
     // fontWeight: "bold",
+  },
+  title: {
+    // marginTop: windowHeight * 0.1,
+    fontSize: windowWidth * 0.072,
+    fontWeight: "bold",
+    marginBottom: 10,
+    color: "white",
+    textAlign: "center",
+    // borderColor: "blue",
+    // borderWidth: 5,
   },
 });

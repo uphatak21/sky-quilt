@@ -21,10 +21,28 @@ const windowWidth = Dimensions.get("window").width;
 export default function Page() {
   const defaultImage = require("../assets/defaultImage.png");
   const { isTablet, userId } = useLocalSearchParams();
+  // console.log("istablet: ", isTablet);
 
   const { darkMode } = useDarkMode();
   const [sunsetImages, setSunsetImages] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // taken from online
+  const convertUTCToLocalTime = (dateString) => {
+    let date = new Date(dateString);
+    const milliseconds = Date.UTC(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      date.getHours(),
+      date.getMinutes(),
+      date.getSeconds()
+    );
+    const localTime = new Date(milliseconds);
+    // localTime.getDate(); // local date
+    // localTime.getHours(); // local hour
+    return localTime;
+  };
 
   // add a try catch here?
 
@@ -33,7 +51,7 @@ export default function Page() {
       const { data, error } = await supabase.storage
         .from("sunset-bucket")
         .list(userId);
-      console.log("data", data.length);
+      // console.log("data", data.length);
       setSunsetImages(
         data
           .filter(
@@ -50,6 +68,8 @@ export default function Page() {
   }, []);
 
   const renderSunsetImage = ({ item }) => {
+    // console.log("item", item, typeof item);
+
     const itemDate = item.slice(0, -4);
     const date = new Date(itemDate);
     const month = date
@@ -57,9 +77,10 @@ export default function Page() {
         month: "short",
       })
       .toLocaleLowerCase();
-    console.log(date);
+    // console.log(date);
     const day = date.getDate() + 1;
-    const dateString = `${month} ${day}`;
+    const year = date.getFullYear() % 100;
+    const dateString = `${month} ${day}, '${year}`;
     const { data } = supabase.storage
       .from(`sunset-bucket/${userId}`)
       .getPublicUrl(item);
@@ -75,7 +96,16 @@ export default function Page() {
           />
         )}
 
-        <Text style={styles.caption}>{dateString}</Text>
+        <Text
+          style={[
+            styles.caption,
+            darkMode
+              ? { color: Themes.dark.text }
+              : { color: Themes.light.text },
+          ]}
+        >
+          {dateString}
+        </Text>
       </View>
     );
   };
@@ -92,7 +122,7 @@ export default function Page() {
 
           <FlatList
             data={sunsetImages}
-            keyExtractor={(item) => item.name}
+            keyExtractor={(item) => item}
             renderItem={renderSunsetImage}
             numColumns={3}
           />
@@ -108,6 +138,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingTop: 30,
+    // borderWidth: 5,
+    // borderColor: "blue",
   },
   title: {
     fontSize: windowWidth * 0.072,
@@ -117,16 +149,15 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   imageItem: {
-    width: 150,
-    height: 150,
-    margin: 10,
+    width: windowWidth * 0.3,
+    height: windowWidth * 0.3,
+    margin: 5,
     borderRadius: 30,
     // borderWidth: 5,
     // borderColor: "blue",
   },
   caption: {
-    color: "white",
-    fontSize: windowWidth * 0.03,
+    fontSize: windowWidth * 0.04,
   },
   quiltTile: {
     flexDirection: "column",
