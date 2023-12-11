@@ -14,8 +14,8 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     justifyContent: "flex-end",
-    padding: 40,
-    width: "95%",
+    padding: 45,
+    width: "100%",
   },
 });
 

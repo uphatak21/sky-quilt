@@ -17,7 +17,6 @@ const DarkModeProvider = ({ children }) => {
   );
 };
 
-// Make an exportable function for it
 const useDarkMode = () => {
   const darkMode = useContext(DarkModeContext);
   return darkMode;

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { StyleSheet, View, Dimensions } from "react-native";
+import { StyleSheet, View, Dimensions, Alert } from "react-native";
 import supabase from "./Supabase";
 import { Button, Input } from "react-native-elements";
 
@@ -17,6 +17,9 @@ export default function Auth() {
         email: email,
         password: password,
       });
+      if (!data.session) {
+        Alert.alert("Incorrect email or password.");
+      }
     } catch (error) {
       console.error(error);
     }
@@ -30,6 +33,9 @@ export default function Auth() {
         email: email,
         password: password,
       });
+      if (!data.session) {
+        Alert.alert("There already exists an account with this email.");
+      }
     } catch (error) {
       console.error(error);
     }
@@ -61,7 +67,7 @@ export default function Auth() {
       </View>
       <View style={[styles.verticallySpaced, styles.mt20]}>
         <Button
-          title="Sign in"
+          title="sign in"
           disabled={loading}
           onPress={() => signInWithEmail()}
           style={styles.button}
@@ -69,7 +75,7 @@ export default function Auth() {
       </View>
       <View style={styles.verticallySpaced}>
         <Button
-          title="Sign up"
+          title="sign up"
           disabled={loading}
           onPress={() => signUpWithEmail()}
         />
