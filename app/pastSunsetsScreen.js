@@ -6,66 +6,93 @@ import {
   Image,
   StyleSheet,
   SafeAreaView,
+  StatusBar,
+  Dimensions,
 } from "react-native";
 import supabase from "./Supabase";
 import { LinearGradient } from "expo-linear-gradient";
 import { useDarkMode } from "../assets/Themes/DarkModeContext";
 import { Themes } from "../assets/Themes";
+import { useLocalSearchParams } from "expo-router";
+
+const windowWidth = Dimensions.get("window").width;
 
 export default function Page() {
-  const params = useLocalSearchParams();
-
+  const defaultImage = require("../assets/defaultImage.png");
+  const { isTablet, userId } = useLocalSearchParams();
   const { darkMode } = useDarkMode();
   const [sunsetImages, setSunsetImages] = useState([]);
 
   useEffect(() => {
     const fetchSunsetImages = async () => {
       try {
-        const { data, error } = await supabase
-          .from("sunset-images")
-          .select("*");
-        if (error) {
-          console.error("Error fetching sunset images:", error);
-        } else {
-          setSunsetImages(data);
-          //   console.log(data);
-        }
+        const { data, error } = await supabase.storage
+          .from("sunset-bucket")
+          .list(userId);
+        setSunsetImages(
+          data
+            .filter(
+              (entry) =>
+                entry.name != userId && entry.name != ".emptyFolderPlaceholder"
+            )
+            .map((image) => image.name)
+        );
       } catch (error) {
-        console.error("Error fetching sunset images:", error.message);
+        console.error(error);
       }
     };
     fetchSunsetImages();
   }, []);
 
   const renderSunsetImage = ({ item }) => {
-    const date = new Date(item.date_created);
+    const itemDate = item.slice(0, -4);
+    const date = new Date(itemDate);
+    // CITATION: https://stackoverflow.com/questions/59310560/date-formatting-in-react-native
     const month = date
       .toLocaleString("en-us", {
         month: "short",
       })
       .toLocaleLowerCase();
-    const day = date.getDate();
-    const dateString = `${month} ${day}`;
+    const day = date.getDate() + 1;
+    // CITATION: https://stackoverflow.com/questions/59101544/how-to-get-last-2-digits-of-year-from-javascript-date
+    const year = date.getFullYear() % 100;
+    const dateString = `${month} ${day}, '${year}`;
+    const { data } = supabase.storage
+      .from(`sunset-bucket/${userId}`)
+      .getPublicUrl(item);
     return (
       <View style={styles.quiltTile}>
-        <Image source={{ uri: item.image_uri }} style={styles.imageItem} />
-        <Text style={styles.caption}>{dateString}</Text>
+        <Image
+          source={{ uri: data.publicUrl }}
+          style={styles.imageItem}
+          defaultSource={defaultImage}
+        />
+        <Text
+          style={[
+            styles.caption,
+            darkMode
+              ? { color: Themes.dark.text }
+              : { color: Themes.light.text },
+          ]}
+        >
+          {dateString}
+        </Text>
       </View>
     );
   };
 
   return (
     <LinearGradient
-      colors={darkMode ? Themes.light.colors : Themes.dark.colors}
+      colors={darkMode ? Themes.dark.colors : Themes.light.colors}
       style={styles.container}
     >
       <SafeAreaView>
+        <StatusBar barStyle={"light-content"} />
         <View style={styles.container}>
-          <Text style={styles.title}>past sunsets</Text>
-
+          <Text style={styles.title}>my quilt</Text>
           <FlatList
             data={sunsetImages}
-            keyExtractor={(item) => item.name}
+            keyExtractor={(item) => item}
             renderItem={renderSunsetImage}
             numColumns={3}
           />
@@ -83,20 +110,19 @@ const styles = StyleSheet.create({
     paddingTop: 30,
   },
   title: {
-    fontSize: 32,
+    fontSize: windowWidth * 0.072,
     fontWeight: "bold",
     color: "white",
-    fontFamily: "sans-serif",
     marginBottom: 20,
   },
   imageItem: {
-    width: 150,
-    height: 150,
-    margin: 10,
+    width: windowWidth * 0.3,
+    height: windowWidth * 0.3,
+    margin: 5,
     borderRadius: 30,
   },
   caption: {
-    color: "white",
+    fontSize: windowWidth * 0.04,
   },
   quiltTile: {
     flexDirection: "column",

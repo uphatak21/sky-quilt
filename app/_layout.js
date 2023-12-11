@@ -23,6 +23,14 @@ export default function Layout() {
           }}
           name="pastSunsetsScreen"
         />
+        <Stack.Screen
+          options={{
+            headerTransparent: true,
+            title: "",
+            headerTintColor: "white",
+          }}
+          name="settings"
+        />
       </Stack>
     </DarkModeProvider>
   );
