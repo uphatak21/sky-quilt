@@ -28,6 +28,7 @@ const deviceMap = {
   [Device.DeviceType.DESKTOP]: "desktop",
 };
 const windowWidth = Dimensions.get("window").width;
+const windowHeight = Dimensions.get("window").height;
 
 export default function Page() {
   const { darkMode, toggleDarkMode } = useDarkMode();
@@ -113,25 +114,6 @@ export default function Page() {
             <View style={styles.buttonContainer}>
               <Link
                 href={{
-                  pathname: "/postSunsetScreen",
-                  params: {
-                    isTablet: isTablet,
-                    userId: session.user.id,
-                  },
-                }}
-              >
-                <View style={styles.button}>
-                  <Ionicons
-                    name="image-outline"
-                    color="white"
-                    size={60}
-                    style={styles.icon}
-                  />
-                  <Text style={styles.buttonText}>post today's sunset</Text>
-                </View>
-              </Link>
-              <Link
-                href={{
                   pathname: "/pastSunsetsScreen",
                   params: {
                     isTablet: isTablet,
@@ -147,6 +129,25 @@ export default function Page() {
                     style={styles.icon}
                   />
                   <Text style={styles.buttonText}>my quilt</Text>
+                </View>
+              </Link>
+              <Link
+                href={{
+                  pathname: "/postSunsetScreen",
+                  params: {
+                    isTablet: isTablet,
+                    userId: session.user.id,
+                  },
+                }}
+              >
+                <View style={styles.button}>
+                  <Ionicons
+                    name="image-outline"
+                    color="white"
+                    size={60}
+                    style={styles.icon}
+                  />
+                  <Text style={styles.buttonText}>today's sunset</Text>
                 </View>
               </Link>
               <Link
@@ -223,11 +224,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    // height: "20%",
+    height: windowHeight * 0.1,
     // flex: 1,
   },
   buttonText: {
     color: "white",
+    fontSize: windowWidth * 0.04,
   },
   button: {
     // borderRadius: 90,
@@ -240,6 +242,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
+    height: "100%",
+    width: windowWidth * 0.3,
+    flex: 1,
+    // flexDirection: "row",
   },
   icon: {
     // borderRadius: 50,
@@ -247,10 +253,6 @@ const styles = StyleSheet.create({
     // borderWidth: 5,
     // resizeMode: "contain",
   },
-  // container: {
-  //   marginTop: 40,
-  //   padding: 12,
-  // },
   verticallySpaced: {
     paddingTop: 4,
     paddingBottom: 4,

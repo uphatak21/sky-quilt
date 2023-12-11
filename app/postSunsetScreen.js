@@ -8,6 +8,8 @@ import {
   Alert,
   SafeAreaView,
   StatusBar,
+  ActivityIndicator,
+  Dimensions,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { LinearGradient } from "expo-linear-gradient";
@@ -19,11 +21,16 @@ import { decode } from "base64-arraybuffer";
 
 // const testing = false;
 
+// add a loading indicator!!
+
+const windowWidth = Dimensions.get("window").width;
+
 export default function Page() {
   const { isTablet, userId } = useLocalSearchParams();
 
   const { darkMode } = useDarkMode();
   const [selectedImage, setSelectedImage] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const defaultImage = require("../assets/defaultImage.png");
 
@@ -54,6 +61,7 @@ export default function Page() {
               .getPublicUrl(`${currentDate}.png`);
             console.log("public url", data);
             setSelectedImage(data.publicUrl);
+            setLoading(false);
           }
         }
       } catch (error) {
@@ -101,7 +109,8 @@ export default function Page() {
           },
           {
             text: "OK",
-            onPress: () => uploadImage(result.assets[0].base64),
+            onPress: () =>
+              uploadImage(result.assets[0].base64, result.assets[0].uri),
           },
         ],
         { cancelable: false }
@@ -111,9 +120,12 @@ export default function Page() {
     }
   };
 
-  const uploadImage = async (base64) => {
+  //printing the wrong date?
+
+  const uploadImage = async (base64, uri) => {
     try {
       const currentDate = new Date().toISOString().slice(0, 10);
+
       // console.log("date: ", currentDate);
 
       const { data, error } = await supabase.storage
@@ -127,7 +139,8 @@ export default function Page() {
         console.error("First error uploading image:", error);
       } else {
         console.log("Image uploaded successfully:", data);
-        setSelectedImage(base64);
+        setSelectedImage(uri);
+        setLoading(false);
       }
     } catch (error) {
       console.error("Second error uploading image:", error.message);
@@ -142,21 +155,29 @@ export default function Page() {
       <SafeAreaView>
         <StatusBar barStyle={"light-content"} />
         <View style={styles.container}>
-          <Text style={styles.title}>sky quilt</Text>
+          <Text style={styles.title}>today's sunset</Text>
           <View
             style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
           >
             {selectedImage ? (
               <View style={styles.body}>
-                <Text style={styles.bodyText}>
+                <Text style={[styles.bodyText, styles.bodyComponent]}>
                   one of the only constants in life is that the sun rises and
                   sets.
                 </Text>
-                <Image
-                  source={{ uri: selectedImage }}
-                  style={styles.imagePreview}
-                  defaultSource={defaultImage}
-                />
+                {loading ? (
+                  <ActivityIndicator
+                    size="large"
+                    color="#0000ff"
+                    style={styles.styles.bodyComponent}
+                  />
+                ) : (
+                  <Image
+                    source={{ uri: selectedImage }}
+                    style={[styles.imagePreview, styles.bodyComponent]}
+                    defaultSource={defaultImage}
+                  />
+                )}
               </View>
             ) : (
               <Button
@@ -185,20 +206,32 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     // fontFamily: "sans-serif",
     marginBottom: 20,
+    fontSize: windowWidth * 0.072,
+    // borderColor: "yellow",
+    // borderWidth: 5,
   },
   body: {
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
+    // borderColor: "blue",
+    // borderWidth: 5,
+    flex: 1,
+  },
+  bodyComponent: {
+    paddingTop: 40,
+    paddingBottom: 40,
   },
   bodyText: {
+    textAlign: "center",
     color: "white",
     justifyContent: "center",
     alignItems: "center",
+    fontSize: windowWidth * 0.04,
   },
   imagePreview: {
-    width: 200,
-    height: 200,
+    width: windowWidth * 0.6,
+    height: windowWidth * 0.6,
     marginTop: 20,
     marginBottom: 20,
     borderRadius: 30,

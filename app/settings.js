@@ -1,11 +1,18 @@
-import { useState, useEffect } from "react";
 import supabase from "./Supabase";
-import { StyleSheet, View, SafeAreaView, StatusBar } from "react-native";
+import {
+  StyleSheet,
+  View,
+  SafeAreaView,
+  StatusBar,
+  Dimensions,
+} from "react-native";
 import { Button, Text } from "react-native-elements";
 import { useLocalSearchParams, router } from "expo-router";
 import { Themes } from "../assets/Themes";
 import { LinearGradient } from "expo-linear-gradient";
 import { useDarkMode } from "../assets/Themes/DarkModeContext";
+
+const windowWidth = Dimensions.get("window").width;
 
 export default function Page() {
   const { isTablet, email } = useLocalSearchParams();
@@ -19,8 +26,8 @@ export default function Page() {
       <SafeAreaView>
         <StatusBar barStyle={"light-content"} />
         <View style={styles.container}>
-          <View style={[styles.verticallySpaced, styles.mt20]}>
-            <Text>Your email: {email}</Text>
+          <View style={[styles.verticallySpaced]}>
+            <Text style={styles.bodyText}>Your email: {email}</Text>
           </View>
 
           <View style={styles.verticallySpaced}>
@@ -43,14 +50,19 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingTop: 30,
+    paddingHorizontal: 20,
+    paddingTop: 50,
   },
   verticallySpaced: {
-    paddingTop: 4,
-    paddingBottom: 4,
+    paddingTop: 10,
+    paddingBottom: 10,
     alignSelf: "stretch",
   },
-  mt20: {
-    marginTop: 20,
+  bodyText: {
+    color: "white",
+    justifyContent: "center",
+    alignItems: "center",
+    fontSize: windowWidth * 0.04,
+    // fontWeight: "bold",
   },
 });

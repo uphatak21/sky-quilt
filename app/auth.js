@@ -19,7 +19,7 @@ export default function Auth() {
     } catch (error) {
       console.error(error);
     }
-    if (error) Alert.alert(error.message);
+    // if (error) Alert.alert(error.message);
     setLoading(false);
   }
 
@@ -33,7 +33,7 @@ export default function Auth() {
     } catch (error) {
       console.error(error);
     }
-    if (error) Alert.alert(error.message);
+    // if (error) Alert.alert(error.message);
     setLoading(false);
   }
 

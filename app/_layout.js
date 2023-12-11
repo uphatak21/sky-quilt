@@ -1,5 +1,5 @@
 import React from "react";
-import { Stack } from "expo-router";
+import { Stack, Tabs } from "expo-router";
 import { DarkModeProvider } from "../assets/Themes/DarkModeContext";
 
 export default function Layout() {

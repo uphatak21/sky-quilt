@@ -7,6 +7,8 @@ import {
   StyleSheet,
   SafeAreaView,
   StatusBar,
+  ActivityIndicator,
+  Dimensions,
 } from "react-native";
 import supabase from "./Supabase";
 import { LinearGradient } from "expo-linear-gradient";
@@ -14,12 +16,17 @@ import { useDarkMode } from "../assets/Themes/DarkModeContext";
 import { Themes } from "../assets/Themes";
 import { useLocalSearchParams } from "expo-router";
 
+const windowWidth = Dimensions.get("window").width;
+
 export default function Page() {
   const defaultImage = require("../assets/defaultImage.png");
   const { isTablet, userId } = useLocalSearchParams();
 
   const { darkMode } = useDarkMode();
   const [sunsetImages, setSunsetImages] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // add a try catch here?
 
   useEffect(() => {
     const fetchSunsetImages = async () => {
@@ -28,9 +35,16 @@ export default function Page() {
         .list(userId);
       console.log("data", data.length);
       setSunsetImages(
-        data.filter((entry) => entry.name != userId).map((image) => image.name)
+        data
+          .filter(
+            (entry) =>
+              entry.name != userId && entry.name != ".emptyFolderPlaceholder"
+          )
+          .map((image) => image.name)
       );
-      console.log("images: ", sunsetImages);
+      setLoading(false);
+      // console.log("images: ", sunsetImages);
+      // console.log("images 2: ", data);
     };
     fetchSunsetImages();
   }, []);
@@ -43,19 +57,24 @@ export default function Page() {
         month: "short",
       })
       .toLocaleLowerCase();
-    console.log(month);
-    const day = date.getDate();
+    console.log(date);
+    const day = date.getDate() + 1;
     const dateString = `${month} ${day}`;
     const { data } = supabase.storage
       .from(`sunset-bucket/${userId}`)
       .getPublicUrl(item);
     return (
       <View style={styles.quiltTile}>
-        <Image
-          source={{ uri: data.publicUrl }}
-          style={styles.imageItem}
-          defaultSource={defaultImage}
-        />
+        {loading ? (
+          <ActivityIndicator size="large" color="#0000ff" />
+        ) : (
+          <Image
+            source={{ uri: data.publicUrl }}
+            style={styles.imageItem}
+            defaultSource={defaultImage}
+          />
+        )}
+
         <Text style={styles.caption}>{dateString}</Text>
       </View>
     );
@@ -91,7 +110,7 @@ const styles = StyleSheet.create({
     paddingTop: 30,
   },
   title: {
-    fontSize: 32,
+    fontSize: windowWidth * 0.072,
     fontWeight: "bold",
     color: "white",
     // fontFamily: "sans-serif",
@@ -107,6 +126,7 @@ const styles = StyleSheet.create({
   },
   caption: {
     color: "white",
+    fontSize: windowWidth * 0.03,
   },
   quiltTile: {
     flexDirection: "column",
